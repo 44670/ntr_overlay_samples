@@ -1,6 +1,6 @@
 
 #include "global.h"
-#include "font.h"
+#include "ov.h"
 
 FS_archive sdmcArchive = { 0x9, (FS_path){ PATH_EMPTY, 1, (u8*)"" } };
 Handle fsUserHandle = 0;
@@ -74,83 +74,6 @@ Result PTMU_GetBatteryLevel(u8 *out)
 
 
 
-void ovDrawTranspartBlackRect(u32 addr, u32 stride, u32 format, int r, int c, int h, int w, u8 level) {
-	format &= 0x0f;
-	int  posC;
-	for (posC = c; posC < c + w; posC ++ ) {
-		if (format == 2) {
-			u16* sp = (u16*)(addr + stride * posC + 240 * 2 - 2 * (r + h - 1));
-			u16* spEnd = sp + h;
-			while (sp < spEnd) {
-				u16 pix = *sp;
-				u16 r = (pix >> 11) & 0x1f;
-				u16 g = (pix >> 5) & 0x3f;
-				u16 b = (pix & 0x1f);
-				pix = ((r >> level) << 11) | ((g >> level) << 5) | (b >> level);
-				*sp = pix;
-				sp++;
-			}
-		}
-		else if (format == 1) {
-			u8* sp = (u16*)(addr + stride * posC + 240 * 3 - 3 * (r + h - 1));
-			u8* spEnd = sp +  3 * h;
-			while (sp < spEnd) {
-				sp[0] >>= level;
-				sp[1] >>= level;
-				sp[2] >>= level;
-				sp += 3;
-			}
-		}
-	}
-}
-
-void ovDrawPixel(u32 addr, u32 stride, u32 format, int posR, int posC, u32 r, u32 g, u32 b) {
-	format &= 0x0f;	
-	if (format == 2) {
-		u16 pix =  ((r ) << 11) | ((g ) << 5) | (b );
-		*(u16*)(addr + stride * posC + 240 * 2 -2 * posR) = pix;
-	} else {
-		u8* sp = (u16*)(addr + stride * posC + 240 * 3 - 3 * posR);
-		sp[0] = b;
-		sp[1] = g;
-		sp[2] = r;
-	}
-}
-
-void ovDrawRect(u32 addr, u32 stride, u32 format, int posR, int posC, int h, int w, u32 r, u32 g, u32 b) {
-	int r_, c_;
-	for (c_ = posC; c_ < posC + w; c_ ++) {
-		for (r_ = posR; r_ < posR + h; r_ ++) {
-			ovDrawPixel(addr, stride, format, r_, c_, r, g, b);
-		}
-	}
-}
-
-void ovDrawChar(u32 addr, u32 stride, u32 format, u8 letter,int y, int x, u32 r, u32 g, u32 b){
-
-  int i;
-  int k;
-  int c;
-  unsigned char mask;
-  unsigned char* _letter;
-  unsigned char l; 
-
-	if ((letter < 32) || (letter > 127)) {
-		letter = '?';
-	}
-
-  c=(letter-32)*8;
-
-  for (i = 0; i < 8; i++){
-    mask = 0b10000000;
-    l = font[i+c];
-    for (k = 0; k < 8; k++){
-      if ((mask >> k) & l){
-        ovDrawPixel(addr, stride, format, i+y, k+x ,r,g,b);
-      }     
-    }
-  }
-}
 
 #define SECONDS_IN_DAY 86400
 #define SECONDS_IN_HOUR 3600
@@ -161,7 +84,7 @@ void drawWidget(int batteryLevel, u32 addr, u32 stride, u32 format, u8 hour, u8 
 
 	char buf[30];
 
-	xsprintf(buf, "%02d:%02d", hour, min);
+	
 
 
 
@@ -187,10 +110,8 @@ void drawWidget(int batteryLevel, u32 addr, u32 stride, u32 format, u8 hour, u8 
 	ovDrawRect(addr, stride, format, 11, colOffset + 46, 7, batval, 255, 255, 255);
 	ovDrawRect(addr, stride, format, 13, colOffset + 62, 3, 1, 255, 255, 255);
 
-	int i;
-	for (i = 0; i < 5; i++) {
-		ovDrawChar(addr, stride, format, buf[i], 11, colOffset + 4 + i * 8, 255, 255, 255);
-	}
+	xsprintf(buf, "%02d:%02d", hour, min);
+	ovDrawString(addr, stride, format, 400, 11, colOffset + 4, 255, 255, 255, buf);
 }
 
 
@@ -199,13 +120,13 @@ Overlay Callback.
 isBottom: 1 for bottom screen, 0 for top screen.
 addr: writable cached framebuffer virtual address, should flush data cache after modifying.
 addrB: right-eye framebuffer for top screen, undefined for bottom screen.
-width: framebuffer stride in bytes, at least 240*bytes_per_pixel.
+stride: framebuffer stride(pitch) in bytes, at least 240*bytes_per_pixel.
 format: framebuffer format, see https://www.3dbrew.org/wiki/GPU/External_Registers for details.
 
 return 0 on success. return 1 when nothing in framebuffer was modified.
 */
 
-u32 overlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 width, u32 format) {
+u32 overlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format) {
 	static u32 count = 0;
 	static u8 batteryLevel = 0;
 
@@ -225,9 +146,9 @@ u32 overlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 width, u32 format) {
 		u8 min = (dayTime % SECONDS_IN_HOUR) / SECONDS_IN_MINUTE;
 		u8 seconds = dayTime % SECONDS_IN_MINUTE;
 	
-		drawWidget(batteryLevel, addr, width, format, hour, min, 334);
+		drawWidget(batteryLevel, addr, stride, format, hour, min, 332);
 		if ((addrB) && (addrB != addr))  {
-			drawWidget(batteryLevel, addrB, width, format, hour, min, 330);
+			drawWidget(batteryLevel, addrB, stride, format, hour, min, 328);
 		}
 		return 0;
 	}
