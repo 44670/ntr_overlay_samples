@@ -92,11 +92,11 @@ void drawWidget(int batteryLevel, u32 addr, u32 stride, u32 format, u8 hour, u8 
 	if (batteryLevel == 1) {
 		batval = 2;
 	} else if (batteryLevel == 2) {
-		batval = 6;
+		batval = 5;
 	} else if (batteryLevel == 3) {
-		batval = 9;
+		batval = 8;
 	} else if (batteryLevel == 4) {
-		batval = 13;
+		batval = 11;
 	} else if (batteryLevel == 5) {
 		batval = 16;
 	}
