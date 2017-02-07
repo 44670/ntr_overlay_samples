@@ -28,7 +28,6 @@ void drawWidget(int calculateFps, int isBottom, u32 addr, u32 stride, u32 format
 			u64 diff = tickNow - lastUpdatedTick[isBottom] ;
 			lastUpdatedTick[isBottom] = tickNow;
 			fps[isBottom] = 64.0 / ((double) (diff) / TICKS_PER_MSEC / 1000.0) * 10.0;
-			//fps[isBottom] = ((double)64.0) / ((double) (diff) / TICKS_PER_MSEC / 1000.0) * 10.0;
 		}
 	}
 
@@ -42,16 +41,19 @@ void drawWidget(int calculateFps, int isBottom, u32 addr, u32 stride, u32 format
 /*
 Overlay Callback.
 isBottom: 1 for bottom screen, 0 for top screen.
-addr: writable cached framebuffer virtual address, should flush data cache after modifying.
+addr: writable cached framebuffer virtual address.
 addrB: right-eye framebuffer for top screen, undefined for bottom screen.
 stride: framebuffer stride(pitch) in bytes, at least 240*bytes_per_pixel.
 format: framebuffer format, see https://www.3dbrew.org/wiki/GPU/External_Registers for details.
 
-return 0 on success. return 1 when nothing in framebuffer was modified.
+NTR will invalidate data cache of the framebuffer before calling overlay callbacks. NTR will flush data cache after the callbacks were called and at least one overlay callback returns zero.
+
+return 0 when the framebuffer was modified. return 1 when nothing in the framebuffer was modified.
 */
 
 u32 overlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format) {
 	drawWidget(1, isBottom, addr, stride, format, 14);
+	// In 2D mode, top screen's addrB might be invalid or equal to addr, do not draw on addrB in either situations
 	if ((isBottom == 0) && (addrB) && (addrB != addr))  {
 		drawWidget(0, isBottom, addrB, stride, format, 10);
 	}
