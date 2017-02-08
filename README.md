@@ -12,6 +12,6 @@ Draw a transparent widget to display time and battery status on the top screen.
 Display fps on both screens.
 
 # Usage
-Copy .plg files to /plugin/game folder in the sdcard. The overlay plugins will take effect after starting games.
+Copy .plg files to **/plugin/game** folder in the sdcard. Then the overlay plugins be loaded in every games.
 
 Precompiled .plg files could be found at https://github.com/44670/ntr_overlay_samples/releases
