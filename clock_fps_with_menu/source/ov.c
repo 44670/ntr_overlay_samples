@@ -34,52 +34,52 @@ void    OvDrawTranspartBlackRect(int posX, int posY, int width, int height, u8 l
 
     u32  addr = mode3D ? g_rframebuf : g_lframebuf;
 
-	for (int posC = posX; posC < posX + width; posC++)
+    for (int posC = posX; posC < posX + width; posC++)
     {
-		if (g_format == 2) 
+        if (g_format == 2) 
         {
-			u16* sp = (u16*)(addr + g_stride * posC + 240 * 2 - 2 * (posY + height - 1));
-			u16* spEnd = sp + height;
-			while (sp < spEnd) 
+            u16* sp = (u16*)(addr + g_stride * posC + 240 * 2 - 2 * (posY + height - 1));
+            u16* spEnd = sp + height;
+            while (sp < spEnd) 
             {
-				u16 pix = *sp;
-				u16 r = (pix >> 11) & 0x1f;
-				u16 g = (pix >> 5) & 0x3f;
-				u16 b = (pix & 0x1f);
-				pix = ((r >> level) << 11) | ((g >> level) << 5) | (b >> level);
-				*sp = pix;
-				sp++;
-			}
+                u16 pix = *sp;
+                u16 r = (pix >> 11) & 0x1f;
+                u16 g = (pix >> 5) & 0x3f;
+                u16 b = (pix & 0x1f);
+                pix = ((r >> level) << 11) | ((g >> level) << 5) | (b >> level);
+                *sp = pix;
+                sp++;
+            }
         } 
         else if (g_format == 1) 
         {
-			u8* sp = (u8*)(addr + g_stride * posC + 240 * 3 - 3 * (posY + height - 1));
-			u8* spEnd = sp +  3 * height;
-			while (sp < spEnd) 
+            u8* sp = (u8*)(addr + g_stride * posC + 240 * 3 - 3 * (posY + height - 1));
+            u8* spEnd = sp +  3 * height;
+            while (sp < spEnd) 
             {
-				sp[0] >>= level;
-				sp[1] >>= level;
-				sp[2] >>= level;
-				sp += 3;
-			}
-		}
-	}
+                sp[0] >>= level;
+                sp[1] >>= level;
+                sp[2] >>= level;
+                sp += 3;
+            }
+        }
+    }
 }
 
 static inline void OvDrawPixel(u32 addr, int posX, int posY, u32 r, u32 g, u32 b)
 {
-	if (g_format == 2) 
+    if (g_format == 2) 
     {
-		u16 pix = ((r ) << 11) | ((g ) << 5) | (b );
-		*(u16*)(addr + g_stride * posX + 240 * 2 -2 * posY) = pix;
-	} 
+        u16 pix = ((r ) << 11) | ((g ) << 5) | (b );
+        *(u16*)(addr + g_stride * posX + 240 * 2 -2 * posY) = pix;
+    } 
     else 
     {
-		u8* sp = (u8*)(addr + g_stride * posX + 240 * 3 - 3 * posY);
-		sp[0] = b;
-		sp[1] = g;
-		sp[2] = r;
-	}
+        u8* sp = (u8*)(addr + g_stride * posX + 240 * 3 - 3 * posY);
+        sp[0] = b;
+        sp[1] = g;
+        sp[2] = r;
+    }
 }
 
 void    OvDrawRect(int posX, int posY, int width, int height, u32 r, u32 g, u32 b) 
@@ -95,13 +95,13 @@ void    OvDrawRect(int posX, int posY, int width, int height, u32 r, u32 g, u32 
 
     u32  addr = mode3D ? g_rframebuf : g_lframebuf;
 
-	for (int x = posX; x < posX + width; x++) 
+    for (int x = posX; x < posX + width; x++) 
     {
-		for (int y = posY; y < posY + height; y++)
+        for (int y = posY; y < posY + height; y++)
         {
-			OvDrawPixel(addr, x, y, r, g, b);
-		}
-	}
+            OvDrawPixel(addr, x, y, r, g, b);
+        }
+    }
 }
 
 void    OvDrawChar(char letter, int posX, int posY, u32 r, u32 g, u32 b)
@@ -120,7 +120,7 @@ void    OvDrawChar(char letter, int posX, int posY, u32 r, u32 g, u32 b)
 
     if ((letter < 32) || (letter > 127))
     {
-    	letter = '?';
+        letter = '?';
     }
 
     int c = (letter - 32) * 8;
