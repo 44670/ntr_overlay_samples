@@ -45,8 +45,20 @@ nop
 nop
 
 
-.global copyRemoteMemory; 
+.global plgGetIoBase; 
+.type plgGetIoBase, %function; 
+plgGetIoBase:
+nop
+nop
+
+.global controlVideo; 
 .type controlVideo, %function; 
 controlVideo:
+nop
+nop
+
+.global copyRemoteMemory; 
+.type copyRemoteMemory, %function; 
+copyRemoteMemory:
 nop
 nop
