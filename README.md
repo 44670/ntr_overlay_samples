@@ -11,6 +11,11 @@ Draw a transparent widget to display time and battery status on the top screen.
 
 Display fps on both screens.
 
+# Clock & FPS with menu
+A configurable overlay plugin, with an ingame menu
+
+Press L + X + Y to open the menu, A to select an option, B to exit the menu
+
 # Usage
 Copy .plg files to **/plugin/game** folder in the sdcard. Then the overlay plugins be loaded in every games.
 
